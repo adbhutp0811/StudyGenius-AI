@@ -16,27 +16,42 @@ class GeminiService:
         if not self.client:
             return "Unable to generate response: GROQ_API_KEY is not configured."
 
-        try:
-            model_name = self.fast_model_name if use_fast else self.model_name
-            response = self.client.chat.completions.create(
-                model=model_name,
-                messages=[
-                    {
-                        "role": "system",
-                        "content": "You are a helpful AI assistant. Respond clearly and accurately."
-                    },
-                    {
-                        "role": "user",
-                        "content": prompt,
-                    }
-                ],
-                temperature=0.7,
-                max_tokens=2000,
-            )
-            content = response.choices[0].message.content
-            return content.strip() if isinstance(content, str) else str(content)
-        except Exception as e:
-            return f"Unable to generate response: {str(e)}"
+        models_to_try = [self.model_name]
+        if not use_fast:
+            models_to_try.append(self.fast_model_name)
+
+        last_error = None
+        for model_name in models_to_try:
+            try:
+                response = self.client.chat.completions.create(
+                    model=model_name,
+                    messages=[
+                        {
+                            "role": "system",
+                            "content": "You are a helpful AI assistant. Respond clearly and accurately."
+                        },
+                        {
+                            "role": "user",
+                            "content": prompt,
+                        }
+                    ],
+                    temperature=0.7,
+                    max_tokens=2000,
+                )
+                content = response.choices[0].message.content
+                return content.strip() if isinstance(content, str) else str(content)
+            except Exception as e:
+                last_error = e
+                err_str = str(e)
+                if '429' in err_str or 'rate_limit' in err_str.lower() or 'rate limit' in err_str.lower():
+                    continue
+
+        if last_error:
+            err_str = str(last_error)
+            if '429' in err_str or 'rate_limit' in err_str.lower():
+                return "I'm currently overloaded with requests. Please wait a moment and try again."
+            return f"Unable to generate response: {err_str}"
+        return "Unable to generate response."
 
     def _parse_json_response(self, text):
         def repair_multiline_json(raw):
