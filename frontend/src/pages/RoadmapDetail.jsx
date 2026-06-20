@@ -11,12 +11,9 @@ export default function RoadmapDetail() {
   const [milestones, setMilestones] = useState([])
 
   useEffect(() => {
-    Promise.all([
-      api.get(`/api/roadmaps/${id}/`),
-      api.get(`/api/roadmaps/milestones/?roadmap=${id}`),
-    ]).then(([rm, ms]) => {
-      setRoadmap(rm.data)
-      setMilestones(ms.data.results || ms.data)
+    api.get(`/api/roadmaps/${id}/`).then(({ data }) => {
+      setRoadmap(data)
+      setMilestones(data.milestone_set || [])
     }).catch(() => toast.error('Failed to load roadmap'))
       .finally(() => setLoading(false))
   }, [id])
@@ -56,7 +53,7 @@ export default function RoadmapDetail() {
         <h2 className="text-xl font-semibold">Milestones</h2>
         {milestones.map((milestone, index) => (
           <div key={milestone.id} className={`card flex items-start gap-4 ${milestone.status === 'completed' ? 'opacity-75' : ''}`}>
-            <button onClick={() => milestone.status !== 'completed' && handleMilestoneComplete(milestone.id)} className="mt-1">
+            <button onClick={() => milestone.status !== 'completed' && handleMilestoneComplete(milestone.id)} disabled={milestone.status === 'completed'} className="mt-1">
               {milestone.status === 'completed'
                 ? <FiCheckCircle className="w-6 h-6 text-green-500" />
                 : <FiCircle className="w-6 h-6 text-gray-300 dark:text-gray-600" />}
