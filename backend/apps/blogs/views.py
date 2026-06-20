@@ -12,6 +12,7 @@ from .serializers import (
 from ..ai_services.gemini_service import GeminiService
 import markdown
 from django.http import HttpResponse
+from django.utils.html import escape
 
 
 class BlogViewSet(viewsets.ModelViewSet):
@@ -148,27 +149,32 @@ class BlogViewSet(viewsets.ModelViewSet):
         serializer = BlogVersionSerializer(versions, many=True)
         return Response(serializer.data)
 
+    def _safe_filename(self, title, ext):
+        safe = title.replace('"', "'").replace('\n', ' ').replace('\r', ' ').replace('\\', '-').replace('/', '-')
+        return f'{safe}.{ext}'
+
     @action(detail=True, methods=['get'])
     def export(self, request, pk=None):
         blog = self.get_object()
-        export_format = request.query_params.get('format', 'markdown')
+        export_format = request.query_params.get('export_format', 'markdown')
 
         if export_format == 'markdown':
             content = f"# {blog.title}\n\n{blog.content}"
             response = HttpResponse(content, content_type='text/markdown')
-            response['Content-Disposition'] = f'attachment; filename="{blog.title}.md"'
+            response['Content-Disposition'] = f'attachment; filename="{self._safe_filename(blog.title, "md")}"'
             return response
         elif export_format == 'html':
-            html = markdown.markdown(blog.content)
-            content = f"<h1>{blog.title}</h1>\n{html}"
+            body = markdown.markdown(blog.content)
+            escaped_title = escape(blog.title)
+            content = f"<!DOCTYPE html><html><head><meta charset=\"utf-8\"><title>{escaped_title}</title></head><body><h1>{escaped_title}</h1>\n{body}</body></html>"
             response = HttpResponse(content, content_type='text/html')
-            response['Content-Disposition'] = f'attachment; filename="{blog.title}.html"'
+            response['Content-Disposition'] = f'attachment; filename="{self._safe_filename(blog.title, "html")}"'
             return response
         elif export_format == 'pdf':
             from ..ai_services.pdf_generator import generate_blog_pdf
             pdf_buffer = generate_blog_pdf(blog)
-            response = HttpResponse(pdf_buffer, content_type='application/pdf')
-            response['Content-Disposition'] = f'attachment; filename="{blog.title}.pdf"'
+            response = HttpResponse(pdf_buffer.getvalue(), content_type='application/pdf')
+            response['Content-Disposition'] = f'attachment; filename="{self._safe_filename(blog.title, "pdf")}"'
             return response
 
         return Response({'error': 'Invalid format. Use markdown, html, or pdf.'}, status=400)

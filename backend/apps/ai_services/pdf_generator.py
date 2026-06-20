@@ -1,4 +1,5 @@
 import io
+from html import escape
 from reportlab.lib import colors
 from reportlab.lib.pagesizes import A4, letter
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
@@ -70,20 +71,28 @@ def generate_resume_pdf(resume):
 
 
 def generate_blog_pdf(blog):
+    import markdown as md_lib
     buffer = io.BytesIO()
     doc = SimpleDocTemplate(buffer, pagesize=A4)
     styles = getSampleStyleSheet()
     elements = []
 
     title_style = ParagraphStyle('BlogTitle', parent=styles['Title'], fontSize=22, spaceAfter=12)
+    heading_style = ParagraphStyle('BlogHeading', parent=styles['Heading2'], fontSize=14, spaceBefore=10, spaceAfter=6)
     normal_style = ParagraphStyle('BlogNormal', parent=styles['Normal'], fontSize=11, spaceAfter=8, leading=16)
 
-    elements.append(Paragraph(blog.title, title_style))
+    elements.append(Paragraph(escape(blog.title), title_style))
     elements.append(Spacer(1, 12))
 
-    for line in blog.content.split('\n'):
-        if line.strip():
-            elements.append(Paragraph(line.strip(), normal_style))
+    html_content = md_lib.markdown(blog.content)
+    for block in html_content.split('\n'):
+        stripped = block.strip()
+        if not stripped:
+            continue
+        if stripped.startswith('<h') and stripped.endswith('>'):
+            elements.append(Paragraph(stripped, heading_style))
+        else:
+            elements.append(Paragraph(stripped, normal_style))
 
     doc.build(elements)
     buffer.seek(0)

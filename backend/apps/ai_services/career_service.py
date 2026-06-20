@@ -30,11 +30,9 @@ Return a JSON object with:
 - summary: A personalized 2-3 paragraph career summary"""
 
         result = self.gemini._safe_generate(prompt)
+        data = self.gemini._parse_json_response(result)
 
-        try:
-            json_match = re.search(r'\{[\s\S]*\}', result)
-            data = json.loads(json_match.group(0)) if json_match else json.loads(result)
-        except (json.JSONDecodeError, ValueError):
+        if not isinstance(data, dict):
             data = {
                 'career_options': [{'title': 'Continue Learning', 'match_percentage': 70, 'description': 'Focus on skill development', 'required_skills': []}],
                 'skill_gaps': [],

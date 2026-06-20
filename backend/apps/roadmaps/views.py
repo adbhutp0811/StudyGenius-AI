@@ -3,7 +3,7 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 from django_filters.rest_framework import DjangoFilterBackend
 from django.utils import timezone
-from .models import Roadmap, Milestone, DailyPlan, Resource
+from .models import CAREER_GOALS, Roadmap, Milestone, DailyPlan, Resource
 from .serializers import (
     RoadmapSerializer, RoadmapListSerializer,
     MilestoneSerializer, DailyPlanSerializer,
@@ -45,7 +45,7 @@ class RoadmapViewSet(viewsets.ModelViewSet):
 
         roadmap = Roadmap.objects.create(
             user=request.user,
-            title=f"{dict(Roadmap.CAREER_GOALS).get(serializer.validated_data['career_goal'], 'Career')} Roadmap",
+            title=f"{dict(CAREER_GOALS).get(serializer.validated_data['career_goal'], 'Career')} Roadmap",
             career_goal=serializer.validated_data['career_goal'],
             custom_goal=serializer.validated_data.get('custom_goal', ''),
             duration_months=serializer.validated_data['duration_months'],

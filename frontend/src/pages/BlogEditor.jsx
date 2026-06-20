@@ -55,10 +55,17 @@ export default function BlogEditor() {
   const handleExport = async (format) => {
     if (!id) return
     try {
-      const response = await api.get(`/api/blogs/${id}/export/?format=${format}`, { responseType: 'blob' })
-      const url = window.URL.createObjectURL(new Blob([response.data]))
-      const a = document.createElement('a'); a.href = url; a.download = `${blog.title}.${format}`
-      a.click(); window.URL.revokeObjectURL(url)
+      const response = await api.get(`/api/blogs/${id}/export/?export_format=${format}`, { responseType: 'blob' })
+      const ext = format === 'markdown' ? 'md' : format
+      const safeName = blog.title.replace(/[\\/*?:"<>|]/g, '_').replace(/\s+/g, '_')
+      const url = window.URL.createObjectURL(response.data)
+      const a = document.createElement('a')
+      a.href = url
+      a.download = `${safeName || 'blog'}.${ext}`
+      document.body.appendChild(a)
+      a.click()
+      a.remove()
+      setTimeout(() => window.URL.revokeObjectURL(url), 1000)
       toast.success(`Exported as ${format}`)
     } catch { toast.error('Export failed') }
   }
