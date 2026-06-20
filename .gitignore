@@ -1,0 +1,51 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+dist/
+build/
+.eggs/
+*.egg
+venv/
+.env
+*.sqlite3
+
+# Django
+backend/staticfiles/
+backend/media/
+backend/static/
+*.mo
+*.pot
+
+# Node
+node_modules/
+frontend/dist/
+frontend/build/
+frontend/.vite/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Environment
+.env
+.env.local
+.env.production
+
+# Logs
+*.log
+logs/
+
+# Uploads
+backend/media/pdfs/
+backend/media/avatars/
+backend/media/blog_covers/
+backend/media/doubt_images/
+backend/media/resume_templates/
+
+# Docker
+docker-data/
