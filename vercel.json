@@ -5,6 +5,7 @@
       "includeFiles": "backend/**"
     }
   },
+  "installCommand": "pip install -r backend/requirements.txt",
   "buildCommand": "cd frontend && npm ci && npm run build && cd .. && python backend/manage.py collectstatic --noinput --clear",
   "outputDirectory": "frontend/dist",
   "rewrites": [
