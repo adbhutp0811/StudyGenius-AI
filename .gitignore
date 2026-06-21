@@ -10,6 +10,9 @@ venv/
 .env
 *.sqlite3
 
+# Vercel
+.vercel/
+
 # Django
 backend/staticfiles/
 backend/media/

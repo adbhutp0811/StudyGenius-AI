@@ -1,0 +1,17 @@
+{
+  "functions": {
+    "api/index.py": {
+      "maxDuration": 30,
+      "includeFiles": "backend/**"
+    }
+  },
+  "buildCommand": "cd frontend && npm ci && npm run build && cd .. && python backend/manage.py collectstatic --noinput --clear",
+  "outputDirectory": "frontend/dist",
+  "rewrites": [
+    { "source": "/api/(.*)", "destination": "/api/index.py" },
+    { "source": "/admin/(.*)", "destination": "/api/index.py" },
+    { "source": "/static/(.*)", "destination": "/api/index.py" },
+    { "source": "/media/(.*)", "destination": "/api/index.py" },
+    { "source": "/(.*)", "destination": "/index.html" }
+  ]
+}
