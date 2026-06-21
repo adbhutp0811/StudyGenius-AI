@@ -107,8 +107,18 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 AUTH_USER_MODEL = 'accounts.User'
 
 # CORS
-CORS_ALLOW_ALL_ORIGINS = DEBUG
-CORS_ALLOWED_ORIGINS = os.getenv('CORS_ALLOWED_ORIGINS', 'http://localhost:3000,http://localhost:5173').split(',')
+LIVE_FRONTEND_URL = 'https://study-genius-ai-lij9.vercel.app'
+DEFAULT_ALLOWED_ORIGINS = [
+    'http://localhost:3000',
+    'http://localhost:5173',
+    LIVE_FRONTEND_URL,
+]
+
+CORS_ALLOW_ALL_ORIGINS = DEBUG and LIVE_FRONTEND_URL not in DEFAULT_ALLOWED_ORIGINS
+CORS_ALLOWED_ORIGINS = os.getenv(
+    'CORS_ALLOWED_ORIGINS',
+    ','.join(DEFAULT_ALLOWED_ORIGINS)
+).split(',')
 
 # REST Framework
 REST_FRAMEWORK = {
